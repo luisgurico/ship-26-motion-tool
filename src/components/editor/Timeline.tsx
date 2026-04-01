@@ -1,35 +1,10 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import {
-  type Screen,
-  type ScreenType,
-  SCREEN_TYPE_META,
-  SCREEN_TYPES,
-  createScreen,
-} from "@/types";
+import { type Screen, createScreen } from "@/types";
 import { Button } from "@/components/ui/button";
-import {
-  Plus,
-  X,
-  Type,
-  Calendar,
-  User,
-  MousePointerClick,
-  Image,
-  FileText,
-  GripVertical,
-} from "lucide-react";
+import { Plus, X, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const SCREEN_ICONS: Record<ScreenType, React.ReactNode> = {
-  title: <Type className="h-3.5 w-3.5" />,
-  "event-details": <Calendar className="h-3.5 w-3.5" />,
-  speaker: <User className="h-3.5 w-3.5" />,
-  cta: <MousePointerClick className="h-3.5 w-3.5" />,
-  logo: <Image className="h-3.5 w-3.5" />,
-  "custom-text": <FileText className="h-3.5 w-3.5" />,
-};
 
 interface TimelineProps {
   screens: Screen[];
@@ -38,23 +13,6 @@ interface TimelineProps {
   onAdd: (screen: Screen) => void;
   onRemove: (id: string) => void;
   onReorder: (screens: Screen[]) => void;
-}
-
-function getScreenLabel(screen: Screen): string {
-  switch (screen.type) {
-    case "title":
-      return screen.data.eventName || "Title";
-    case "event-details":
-      return screen.data.date || "Details";
-    case "speaker":
-      return screen.data.name || "Speaker";
-    case "cta":
-      return screen.data.ctaText || "CTA";
-    case "logo":
-      return "Logo";
-    case "custom-text":
-      return screen.data.heading || "Text";
-  }
 }
 
 export const Timeline: React.FC<TimelineProps> = ({
@@ -67,7 +25,6 @@ export const Timeline: React.FC<TimelineProps> = ({
 }) => {
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
-  const [showAddMenu, setShowAddMenu] = useState(false);
 
   const handleDragStart = useCallback(
     (e: React.DragEvent, id: string) => {
@@ -113,8 +70,8 @@ export const Timeline: React.FC<TimelineProps> = ({
 
   return (
     <div className="border-t border-border bg-background px-4 py-3">
-      <div className="flex items-center gap-2 overflow-x-auto">
-        {screens.map((screen, i) => (
+      <div className="flex items-center justify-center gap-2 overflow-x-auto">
+        {screens.map((screen) => (
           <div
             key={screen.id}
             draggable
@@ -124,7 +81,7 @@ export const Timeline: React.FC<TimelineProps> = ({
             onDragEnd={handleDragEnd}
             onClick={() => onSelect(screen.id)}
             className={cn(
-              "group relative flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer transition-all select-none shrink-0",
+              "group relative flex items-center gap-1.5 rounded-md border px-3 py-2 cursor-pointer transition-all select-none shrink-0",
               "hover:border-zinc-500",
               selectedScreenId === screen.id
                 ? "border-blue-500 bg-blue-500/10"
@@ -136,17 +93,9 @@ export const Timeline: React.FC<TimelineProps> = ({
             )}
           >
             <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 cursor-grab" />
-            <span className="text-muted-foreground">
-              {SCREEN_ICONS[screen.type]}
+            <span className="text-xs font-mono text-foreground truncate max-w-[120px]">
+              {screen.name}
             </span>
-            <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                {SCREEN_TYPE_META[screen.type].label}
-              </span>
-              <span className="text-xs font-mono text-foreground truncate max-w-[100px]">
-                {getScreenLabel(screen)}
-              </span>
-            </div>
             {screens.length > 1 && (
               <button
                 onClick={(e) => {
@@ -161,42 +110,14 @@ export const Timeline: React.FC<TimelineProps> = ({
           </div>
         ))}
 
-        <div className="relative shrink-0">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-[52px] w-[52px] border-dashed"
-            onClick={() => setShowAddMenu(!showAddMenu)}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-
-          {showAddMenu && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowAddMenu(false)}
-              />
-              <div className="absolute bottom-full left-0 mb-2 z-50 rounded-md border border-border bg-background p-1 shadow-lg min-w-[160px]">
-                {SCREEN_TYPES.map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => {
-                      onAdd(createScreen(type));
-                      setShowAddMenu(false);
-                    }}
-                    className="flex items-center gap-2 w-full rounded-sm px-2 py-1.5 text-xs font-mono text-foreground hover:bg-accent transition-colors"
-                  >
-                    <span className="text-muted-foreground">
-                      {SCREEN_ICONS[type]}
-                    </span>
-                    {SCREEN_TYPE_META[type].label}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-[40px] w-[40px] border-dashed shrink-0"
+          onClick={() => onAdd(createScreen())}
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

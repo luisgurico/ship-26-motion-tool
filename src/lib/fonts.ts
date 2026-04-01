@@ -1,5 +1,6 @@
 import { staticFile } from "remotion";
 import { loadFont as loadRemotionFont } from "@remotion/fonts";
+import { loadFont as loadGeistMono } from "@remotion/google-fonts/GeistMono";
 
 export function loadLocalFont(
   family: string,
@@ -15,4 +16,6 @@ export function loadLocalFont(
   });
 }
 
-export { loadFont as loadGoogleFont } from "@remotion/google-fonts/Inter";
+export function loadProjectFonts() {
+  loadGeistMono();
+}

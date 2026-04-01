@@ -2,8 +2,8 @@ import { z } from "zod";
 
 const screenSchema = z.object({
   id: z.string(),
-  type: z.enum(["title", "event-details", "speaker", "cta", "logo", "custom-text"]),
-  data: z.record(z.string(), z.string()),
+  name: z.string(),
+  content: z.string(),
   durationInFrames: z.number().min(15).max(300),
 });
 
