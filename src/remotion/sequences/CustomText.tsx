@@ -38,7 +38,6 @@ export const CustomText: React.FC<CustomTextProps> = ({
         <AnimatedText
           text={heading}
           delay={5}
-          animation="fadeSlide"
           style={{
             fontSize: isPortrait ? 48 : 64,
             fontWeight: 700,
@@ -51,7 +50,6 @@ export const CustomText: React.FC<CustomTextProps> = ({
           <AnimatedText
             text={body}
             delay={15}
-            animation="fade"
             style={{
               fontSize: isPortrait ? 22 : 26,
               fontWeight: 400,

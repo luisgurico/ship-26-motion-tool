@@ -37,7 +37,6 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
         <AnimatedText
           text={date}
           delay={5}
-          animation="fadeSlide"
           style={{
             fontSize: isPortrait ? 48 : 64,
             fontWeight: 700,
@@ -48,7 +47,6 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
         <AnimatedText
           text={location}
           delay={15}
-          animation="fade"
           style={{
             fontSize: isPortrait ? 24 : 28,
             fontWeight: 400,

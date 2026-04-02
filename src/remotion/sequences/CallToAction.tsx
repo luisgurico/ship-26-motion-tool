@@ -1,7 +1,6 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useVideoConfig } from "remotion";
 import { AnimatedText } from "../elements/AnimatedText";
-import { fadeIn, scaleIn } from "@/lib/animations";
 
 interface CallToActionProps {
   ctaText: string;
@@ -20,12 +19,8 @@ export const CallToAction: React.FC<CallToActionProps> = ({
   accentColor,
   backgroundColor,
 }) => {
-  const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { width, height } = useVideoConfig();
   const isPortrait = height > width;
-
-  const buttonScale = scaleIn(frame, fps, 15);
-  const buttonOpacity = fadeIn(frame, 15, 15);
 
   return (
     <AbsoluteFill
@@ -46,7 +41,6 @@ export const CallToAction: React.FC<CallToActionProps> = ({
         <AnimatedText
           text={eventName}
           delay={0}
-          animation="fade"
           style={{
             fontSize: isPortrait ? 36 : 44,
             fontWeight: 700,
@@ -55,8 +49,6 @@ export const CallToAction: React.FC<CallToActionProps> = ({
         />
         <div
           style={{
-            opacity: buttonOpacity,
-            transform: `scale(${buttonScale})`,
             backgroundColor: accentColor,
             color: backgroundColor,
             padding: isPortrait ? "20px 48px" : "16px 40px",
@@ -73,8 +65,7 @@ export const CallToAction: React.FC<CallToActionProps> = ({
           <AnimatedText
             text={ctaUrl.replace(/^https?:\/\//, "")}
             delay={25}
-            animation="fade"
-            style={{
+              style={{
               fontSize: isPortrait ? 18 : 20,
               color: `${textColor}88`,
               fontFamily: "monospace",

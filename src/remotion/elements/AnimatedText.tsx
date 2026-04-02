@@ -1,58 +1,48 @@
 import React from "react";
-import { useCurrentFrame, useVideoConfig } from "remotion";
-import { fadeIn, slideUp, scaleIn } from "@/lib/animations";
+import { useCurrentFrame } from "remotion";
+import { characterDissolve } from "@/lib/animations";
 
 interface AnimatedTextProps {
   text: string;
   delay?: number;
+  outDelay?: number;
+  duration?: number;
   style?: React.CSSProperties;
   className?: string;
-  animation?: "fade" | "slideUp" | "scale" | "fadeSlide";
 }
 
 export const AnimatedText: React.FC<AnimatedTextProps> = ({
   text,
-  delay = 0,
+  delay = 5,
+  outDelay,
+  duration = 15,
   style,
   className,
-  animation = "fadeSlide",
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
 
-  let opacity = 1;
-  let translateY = 0;
-  let scale = 1;
-
-  switch (animation) {
-    case "fade":
-      opacity = fadeIn(frame, delay);
-      break;
-    case "slideUp":
-      translateY = slideUp(frame, delay);
-      opacity = fadeIn(frame, delay);
-      break;
-    case "scale":
-      scale = scaleIn(frame, fps, delay);
-      opacity = fadeIn(frame, delay, 10);
-      break;
-    case "fadeSlide":
-    default:
-      opacity = fadeIn(frame, delay);
-      translateY = slideUp(frame, delay, 30);
-      break;
-  }
+  const inVisible = characterDissolve(text, frame, delay, duration, "in", 42);
+  const outVisible = outDelay != null
+    ? characterDissolve(text, frame, outDelay, duration, "out", 137)
+    : null;
 
   return (
-    <div
-      className={className}
-      style={{
-        opacity,
-        transform: `translateY(${translateY}px) scale(${scale})`,
-        ...style,
-      }}
-    >
-      {text}
+    <div className={className} style={style}>
+      {text.split("").map((char, i) => {
+        if (char === "\n") return <br key={i} />;
+        const showIn = inVisible[i];
+        const showOut = outVisible ? outVisible[i] : true;
+        const visible = showIn && showOut;
+
+        return (
+          <span
+            key={i}
+            style={{ visibility: visible ? "visible" : "hidden" }}
+          >
+            {char}
+          </span>
+        );
+      })}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useImperativeHandle, forwardRef } from "react";
+import React, { useImperativeHandle, forwardRef, useEffect, useState, useCallback } from "react";
 import { Player, type PlayerRef } from "@remotion/player";
 import { SocialPromo } from "@/remotion/compositions/SocialPromo";
 import type { SocialPromoProps } from "@/remotion/compositions/schemas";
@@ -21,7 +21,8 @@ interface PreviewPanelProps {
 export const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
   ({ format, inputProps, durationInFrames }, ref) => {
     const playerRef = React.useRef<PlayerRef>(null);
-    const [playing, setPlaying] = React.useState(false);
+    const [playing, setPlaying] = useState(false);
+    const [currentFrame, setCurrentFrame] = useState(0);
     const videoFormat = VIDEO_FORMATS[format];
 
     useImperativeHandle(ref, () => ({
@@ -32,8 +33,38 @@ export const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       },
     }));
 
-    const maxWidth = 720;
-    const maxHeight = 500;
+    useEffect(() => {
+      const player = playerRef.current;
+      if (!player) return;
+
+      const onFrame = (e: { detail: { frame: number } }) => {
+        setCurrentFrame(e.detail.frame);
+      };
+      const onPlay = () => setPlaying(true);
+      const onPause = () => setPlaying(false);
+
+      player.addEventListener("frameupdate", onFrame as never);
+      player.addEventListener("play", onPlay as never);
+      player.addEventListener("pause", onPause as never);
+      return () => {
+        player.removeEventListener("frameupdate", onFrame as never);
+        player.removeEventListener("play", onPlay as never);
+        player.removeEventListener("pause", onPause as never);
+      };
+    }, []);
+
+    const handleScrub = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const frame = Number(e.target.value);
+        playerRef.current?.seekTo(frame);
+        playerRef.current?.pause();
+        setPlaying(false);
+      },
+      [],
+    );
+
+    const maxWidth = 560;
+    const maxHeight = 460;
     const aspectRatio = videoFormat.width / videoFormat.height;
     let displayWidth: number;
     let displayHeight: number;
@@ -46,11 +77,17 @@ export const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       displayWidth = maxHeight * aspectRatio;
     }
 
+    const totalSeconds = (durationInFrames / DEFAULT_FPS).toFixed(1);
+    const currentSeconds = (currentFrame / DEFAULT_FPS).toFixed(1);
+
     return (
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-3">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          Preview
+        </span>
         <div
           className="rounded-lg overflow-hidden border border-border bg-black"
-          style={{ width: displayWidth, height: displayHeight }}
+          style={{ position: "relative", width: displayWidth, height: displayHeight }}
         >
           <Player
             ref={playerRef}
@@ -66,39 +103,51 @@ export const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
             acknowledgeRemotionLicense
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              if (playing) {
-                playerRef.current?.pause();
-              } else {
-                playerRef.current?.play();
-              }
-              setPlaying(!playing);
-            }}
-          >
-            {playing ? (
-              <Pause className="h-4 w-4" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              playerRef.current?.seekTo(0);
-              playerRef.current?.play();
-              setPlaying(true);
-            }}
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-          <span className="text-xs text-muted-foreground font-mono ml-2">
-            {videoFormat.width}x{videoFormat.height} &middot; {DEFAULT_FPS}fps
-          </span>
+        <div className="flex flex-col gap-2" style={{ width: displayWidth }}>
+          <input
+            type="range"
+            min={0}
+            max={Math.max(durationInFrames - 1, 0)}
+            value={currentFrame}
+            onChange={handleScrub}
+            className="w-full h-1.5 accent-blue-500 cursor-pointer"
+          />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  if (playing) {
+                    playerRef.current?.pause();
+                  } else {
+                    playerRef.current?.play();
+                  }
+                }}
+              >
+                {playing ? (
+                  <Pause className="h-3 w-3" />
+                ) : (
+                  <Play className="h-3 w-3" />
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  playerRef.current?.seekTo(0);
+                  playerRef.current?.play();
+                }}
+              >
+                <RotateCcw className="h-3 w-3" />
+              </Button>
+            </div>
+            <span className="text-[10px] text-muted-foreground font-mono">
+              {currentSeconds}s / {totalSeconds}s &middot; {videoFormat.width}x{videoFormat.height}
+            </span>
+          </div>
         </div>
       </div>
     );

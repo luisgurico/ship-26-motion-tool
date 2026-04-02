@@ -12,13 +12,22 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { ScreenFields } from "./ScreenFields";
-import type { Screen, StyleConfig } from "@/types";
+import type { Screen, StyleConfig, DevConfig, GeneralConfig, TextBox } from "@/types";
 
 interface SidebarProps {
   selectedScreen: Screen | null;
   styleConfig: StyleConfig;
+  devConfig: DevConfig;
+  generalConfig: GeneralConfig;
+  selectedTextBoxId: string | null;
+  onSelectTextBox: (id: string | null) => void;
   onScreenUpdate: (id: string, patch: Partial<Screen>) => void;
   onStyleConfigChange: (config: Partial<StyleConfig>) => void;
+  onDevConfigChange: (config: Partial<DevConfig>) => void;
+  onGeneralConfigChange: (config: Partial<GeneralConfig>) => void;
+  onTextBoxUpdate: (screenId: string, textBoxId: string, patch: Partial<TextBox>) => void;
+  onTextBoxAdd: (screenId: string) => void;
+  onTextBoxRemove: (screenId: string, textBoxId: string) => void;
 }
 
 function ColorField({
@@ -51,8 +60,17 @@ function ColorField({
 export const Sidebar: React.FC<SidebarProps> = ({
   selectedScreen,
   styleConfig,
+  devConfig,
+  generalConfig,
+  selectedTextBoxId,
+  onSelectTextBox,
   onScreenUpdate,
   onStyleConfigChange,
+  onDevConfigChange,
+  onGeneralConfigChange,
+  onTextBoxUpdate,
+  onTextBoxAdd,
+  onTextBoxRemove,
 }) => {
   return (
     <div className="w-[344px] border-r border-border h-full overflow-y-auto bg-background">
@@ -65,8 +83,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <TabsTrigger value="style" className="flex-1">
               Style
             </TabsTrigger>
+            <TabsTrigger value="general" className="flex-1">
+              General
+            </TabsTrigger>
             <TabsTrigger value="export" className="flex-1">
               Export
+            </TabsTrigger>
+            <TabsTrigger
+              value="dev"
+              className="flex-1 border border-dashed border-yellow-600/50 text-yellow-500"
+            >
+              Dev
             </TabsTrigger>
           </TabsList>
 
@@ -74,7 +101,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {selectedScreen ? (
               <ScreenFields
                 screen={selectedScreen}
+                selectedTextBoxId={selectedTextBoxId}
+                onSelectTextBox={onSelectTextBox}
                 onUpdate={onScreenUpdate}
+                onTextBoxUpdate={onTextBoxUpdate}
+                onTextBoxAdd={onTextBoxAdd}
+                onTextBoxRemove={onTextBoxRemove}
               />
             ) : (
               <div className="flex items-center justify-center py-12">
@@ -153,6 +185,70 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   max={3}
                   step={0.1}
                 />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="general">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label>
+                  Grid Size: {generalConfig.gridSize} rows
+                </Label>
+                <Slider
+                  value={[generalConfig.gridSize]}
+                  onValueChange={([v]) =>
+                    onGeneralConfigChange({ gridSize: v })
+                  }
+                  min={4}
+                  max={40}
+                  step={1}
+                />
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  Snap grid divisions ({(100 / generalConfig.gridSize).toFixed(1)}% per cell)
+                </span>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="dev">
+            <div className="flex flex-col gap-4 rounded border border-dashed border-yellow-600/40 p-3">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-yellow-500">
+                Dev Parameters
+              </p>
+              <div className="flex flex-col gap-1.5">
+                <Label>
+                  Text Animation Duration: {devConfig.textAnimationDuration}f
+                </Label>
+                <Slider
+                  value={[devConfig.textAnimationDuration]}
+                  onValueChange={([v]) =>
+                    onDevConfigChange({ textAnimationDuration: v })
+                  }
+                  min={5}
+                  max={60}
+                  step={1}
+                />
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  Frames for character dissolve in/out
+                </span>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>
+                  Screen Gap: {devConfig.screenGap}f
+                </Label>
+                <Slider
+                  value={[devConfig.screenGap]}
+                  onValueChange={([v]) =>
+                    onDevConfigChange({ screenGap: v })
+                  }
+                  min={-30}
+                  max={30}
+                  step={1}
+                />
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  Gap between out/in animations. Negative = overlap
+                </span>
               </div>
             </div>
           </TabsContent>

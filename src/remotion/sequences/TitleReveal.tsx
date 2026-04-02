@@ -1,7 +1,6 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useVideoConfig } from "remotion";
 import { AnimatedText } from "../elements/AnimatedText";
-import { fadeIn } from "@/lib/animations";
 
 interface TitleRevealProps {
   eventName: string;
@@ -16,11 +15,8 @@ export const TitleReveal: React.FC<TitleRevealProps> = ({
   textColor,
   accentColor,
 }) => {
-  const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
   const isPortrait = height > width;
-
-  const lineWidth = fadeIn(frame, 10, 20) * (isPortrait ? 200 : 300);
 
   return (
     <AbsoluteFill
@@ -41,7 +37,6 @@ export const TitleReveal: React.FC<TitleRevealProps> = ({
         <AnimatedText
           text={eventName}
           delay={5}
-          animation="fadeSlide"
           style={{
             fontSize: isPortrait ? 72 : 96,
             fontWeight: 800,
@@ -53,7 +48,7 @@ export const TitleReveal: React.FC<TitleRevealProps> = ({
         />
         <div
           style={{
-            width: lineWidth,
+            width: isPortrait ? 200 : 300,
             height: 3,
             backgroundColor: accentColor,
             borderRadius: 2,
@@ -62,7 +57,6 @@ export const TitleReveal: React.FC<TitleRevealProps> = ({
         <AnimatedText
           text={tagline}
           delay={15}
-          animation="fade"
           style={{
             fontSize: isPortrait ? 28 : 32,
             fontWeight: 400,

@@ -54,7 +54,6 @@ export const SpeakerCard: React.FC<SpeakerCardProps> = ({
         <AnimatedText
           text={speakerName}
           delay={10}
-          animation="fadeSlide"
           style={{
             fontSize: isPortrait ? 44 : 52,
             fontWeight: 700,
@@ -64,7 +63,6 @@ export const SpeakerCard: React.FC<SpeakerCardProps> = ({
         <AnimatedText
           text={speakerTitle}
           delay={18}
-          animation="fade"
           style={{
             fontSize: isPortrait ? 22 : 26,
             fontWeight: 400,

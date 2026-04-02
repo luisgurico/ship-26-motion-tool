@@ -66,7 +66,6 @@ export const LogoReveal: React.FC<LogoRevealProps> = ({
           <AnimatedText
             text={tagline}
             delay={15}
-            animation="fade"
             style={{
               fontSize: isPortrait ? 24 : 28,
               fontWeight: 400,

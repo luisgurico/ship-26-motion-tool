@@ -1,7 +1,21 @@
+export type TextJustification = "left" | "center" | "right";
+
+export interface TextBox {
+  id: string;
+  content: string;
+  xPercent: number;
+  yPercent: number;
+  justification: TextJustification;
+  fontSize: number;
+  fontWeight: number;
+  fontFamily: string;
+  letterSpacing: number;
+}
+
 export interface Screen {
   id: string;
   name: string;
-  content: string;
+  textBoxes: TextBox[];
   durationInFrames: number;
 }
 
@@ -16,22 +30,54 @@ export interface StyleConfig {
   transitionSpeed: number;
 }
 
+export function createTextBox(content = "Text", xPercent = 50, yPercent = 50): TextBox {
+  return {
+    id: crypto.randomUUID(),
+    content,
+    xPercent,
+    yPercent,
+    justification: "center",
+    fontSize: 88,
+    fontWeight: 400,
+    fontFamily: "Geist Mono",
+    letterSpacing: -0.02,
+  };
+}
+
 export function createScreen(name = "New Screen", content = "Text"): Screen {
   return {
     id: crypto.randomUUID(),
     name,
-    content,
+    textBoxes: [createTextBox(content)],
     durationInFrames: 75,
   };
 }
 
 export const DEFAULT_SCREENS: Screen[] = [
-  { id: "1", name: "Intro", content: "Ship 26", durationInFrames: 75 },
-  { id: "2", name: "Tagline", content: "Ship what's next", durationInFrames: 75 },
-  { id: "3", name: "Location", content: "London", durationInFrames: 75 },
-  { id: "4", name: "URL", content: "vercel.com/ship", durationInFrames: 75 },
-  { id: "5", name: "Outro", content: "Ship 26", durationInFrames: 75 },
+  { id: "1", name: "Intro", textBoxes: [{ id: "1a", content: "Ship 26", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], durationInFrames: 75 },
+  { id: "2", name: "Tagline", textBoxes: [{ id: "2a", content: "Ship what's next", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], durationInFrames: 75 },
+  { id: "3", name: "Location", textBoxes: [{ id: "3a", content: "London", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], durationInFrames: 75 },
+  { id: "4", name: "URL", textBoxes: [{ id: "4a", content: "vercel.com/ship", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], durationInFrames: 75 },
+  { id: "5", name: "Outro", textBoxes: [{ id: "5a", content: "Ship 26", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], durationInFrames: 75 },
 ];
+
+export interface GeneralConfig {
+  gridSize: number;
+}
+
+export const DEFAULT_GENERAL_CONFIG: GeneralConfig = {
+  gridSize: 20,
+};
+
+export interface DevConfig {
+  textAnimationDuration: number;
+  screenGap: number;
+}
+
+export const DEFAULT_DEV_CONFIG: DevConfig = {
+  textAnimationDuration: 15,
+  screenGap: 0,
+};
 
 export const DEFAULT_STYLE: StyleConfig = {
   primaryColor: "#ffffff",

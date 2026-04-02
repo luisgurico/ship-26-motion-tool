@@ -1,9 +1,21 @@
 import { z } from "zod";
 
+const textBoxSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  xPercent: z.number().min(0).max(100),
+  yPercent: z.number().min(0).max(100),
+  justification: z.enum(["left", "center", "right"]),
+  fontSize: z.number().min(12).max(400),
+  fontWeight: z.number().min(100).max(900).default(400),
+  fontFamily: z.string().default("Geist Mono"),
+  letterSpacing: z.number().min(-0.2).max(0.5).default(-0.02),
+});
+
 const screenSchema = z.object({
   id: z.string(),
   name: z.string(),
-  content: z.string(),
+  textBoxes: z.array(textBoxSchema).default([]),
   durationInFrames: z.number().min(15).max(300),
 });
 
@@ -18,6 +30,8 @@ export const socialPromoSchema = z.object({
     .enum(["dots", "grid", "lines", "waves", "none"])
     .default("grid"),
   transitionSpeed: z.number().min(0.5).max(3).default(1),
+  textAnimationDuration: z.number().min(5).max(60).default(15),
+  screenGap: z.number().min(-30).max(30).default(0),
 });
 
 export type SocialPromoProps = z.infer<typeof socialPromoSchema>;

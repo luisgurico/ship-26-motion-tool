@@ -18,10 +18,6 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
 
-  const animatedOpacity = interpolate(frame, [0, 30], [0, opacity], {
-    extrapolateRight: "clamp",
-  });
-
   const renderPattern = () => {
     switch (pattern) {
       case "dots":
@@ -137,7 +133,7 @@ export const PatternBackground: React.FC<PatternBackgroundProps> = ({
         overflow: "hidden",
       }}
     >
-      <div style={{ opacity: animatedOpacity }}>{renderPattern()}</div>
+      <div style={{ opacity }}>{renderPattern()}</div>
     </div>
   );
 };

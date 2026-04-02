@@ -1,6 +1,5 @@
 import React from "react";
-import { Img, useCurrentFrame, useVideoConfig, staticFile } from "remotion";
-import { fadeIn, scaleIn } from "@/lib/animations";
+import { Img, staticFile } from "remotion";
 
 interface ImageRevealProps {
   src: string;
@@ -13,18 +12,11 @@ interface ImageRevealProps {
 
 export const ImageReveal: React.FC<ImageRevealProps> = ({
   src,
-  delay = 0,
   width = 200,
   height = 200,
   borderRadius = 999,
   style,
 }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const opacity = fadeIn(frame, delay, 15);
-  const scale = scaleIn(frame, fps, delay);
-
   if (!src) return null;
 
   const imageSrc = src.startsWith("http") ? src : staticFile(src);
@@ -32,8 +24,6 @@ export const ImageReveal: React.FC<ImageRevealProps> = ({
   return (
     <div
       style={{
-        opacity,
-        transform: `scale(${scale})`,
         width,
         height,
         borderRadius,

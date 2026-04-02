@@ -3,7 +3,7 @@ import { Composition } from "remotion";
 import { SocialPromo } from "./compositions/SocialPromo";
 import { socialPromoSchema } from "./compositions/schemas";
 import { VIDEO_FORMATS, DEFAULT_FPS } from "@/lib/formats";
-import { DEFAULT_SCREENS, DEFAULT_STYLE } from "@/types";
+import { DEFAULT_SCREENS, DEFAULT_STYLE, DEFAULT_DEV_CONFIG } from "@/types";
 
 export const RemotionRoot: React.FC = () => {
   const totalDuration = DEFAULT_SCREENS.reduce(
@@ -14,6 +14,7 @@ export const RemotionRoot: React.FC = () => {
   const defaultProps = {
     screens: DEFAULT_SCREENS,
     ...DEFAULT_STYLE,
+    ...DEFAULT_DEV_CONFIG,
   };
 
   return (

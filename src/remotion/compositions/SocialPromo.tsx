@@ -1,77 +1,105 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
-import { TransitionSeries } from "@remotion/transitions";
+import { AbsoluteFill, Sequence, useVideoConfig } from "remotion";
 import type { SocialPromoProps } from "./schemas";
+import type { TextBox } from "@/types";
 import { AnimatedText } from "../elements/AnimatedText";
-import { fadeTransition, slideTransition } from "../transitions/presets";
 import { loadProjectFonts } from "@/lib/fonts";
 
 loadProjectFonts();
 
-const TitleCard: React.FC<{ content: string }> = ({ content }) => {
+function getTransformOrigin(justification: string): string {
+  switch (justification) {
+    case "left": return "0% 50%";
+    case "right": return "100% 50%";
+    default: return "50% 50%";
+  }
+}
+
+function getTranslate(justification: string): string {
+  switch (justification) {
+    case "left": return "translateY(-100%)";
+    case "right": return "translate(-100%, -100%)";
+    default: return "translate(-50%, -100%)";
+  }
+}
+
+const TitleCard: React.FC<{
+  textBoxes: TextBox[];
+  durationInFrames: number;
+  textAnimationDuration: number;
+}> = ({ textBoxes, durationInFrames, textAnimationDuration }) => {
   const { width, height } = useVideoConfig();
-  const isPortrait = height > width;
+
+  const inDelay = 0;
+  const outDelay = durationInFrames - textAnimationDuration;
 
   return (
-    <AbsoluteFill
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#000000",
-      }}
-    >
-      <AnimatedText
-        text={content}
-        delay={5}
-        animation="fadeSlide"
-        style={{
-          fontSize: isPortrait ? 64 : 88,
-          fontWeight: 400,
-          fontFamily: "'Geist Mono', monospace",
-          color: "#ffffff",
-          letterSpacing: "-0.02em",
-          textAlign: "center",
-          lineHeight: 1.1,
-        }}
-      />
+    <AbsoluteFill>
+      {textBoxes.map((tb) => {
+        const leftPx = (tb.xPercent / 100) * width;
+        const topPx = (tb.yPercent / 100) * height;
+        return (
+          <div
+            key={tb.id}
+            style={{
+              position: "absolute",
+              left: leftPx,
+              top: topPx,
+              transform: getTranslate(tb.justification),
+            }}
+          >
+            <AnimatedText
+              text={tb.content}
+              delay={inDelay}
+              outDelay={outDelay}
+              duration={textAnimationDuration}
+              style={{
+                fontSize: tb.fontSize,
+                fontWeight: tb.fontWeight,
+                fontFamily: `'${tb.fontFamily}', monospace`,
+                color: "#ffffff",
+                letterSpacing: `${tb.letterSpacing}em`,
+                textAlign: tb.justification,
+                lineHeight: 1.1,
+                whiteSpace: "pre",
+              }}
+            />
+          </div>
+        );
+      })}
     </AbsoluteFill>
   );
 };
 
 export const SocialPromo: React.FC<SocialPromoProps> = ({
   screens,
-  transitionSpeed,
+  textAnimationDuration = 15,
+  screenGap = 0,
 }) => {
-  const transitionDuration = Math.round(15 / transitionSpeed);
-  const useSlide = (i: number) => i % 2 === 1;
+  const screenStarts: number[] = [];
+  let currentStart = 0;
+  for (let i = 0; i < screens.length; i++) {
+    screenStarts.push(currentStart);
+    if (i < screens.length - 1) {
+      currentStart += screens[i].durationInFrames + screenGap;
+    }
+  }
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#000000" }}>
-      <TransitionSeries>
-        {screens.map((screen, i) => (
-          <React.Fragment key={screen.id}>
-            {i > 0 && (
-              <TransitionSeries.Transition
-                presentation={
-                  useSlide(i)
-                    ? slideTransition(transitionDuration).presentation
-                    : fadeTransition(transitionDuration).presentation
-                }
-                timing={
-                  useSlide(i)
-                    ? slideTransition(transitionDuration).timing
-                    : fadeTransition(transitionDuration).timing
-                }
-              />
-            )}
-            <TransitionSeries.Sequence
-              durationInFrames={screen.durationInFrames}
-            >
-              <TitleCard content={screen.content} />
-            </TransitionSeries.Sequence>
-          </React.Fragment>
-        ))}
-      </TransitionSeries>
+      {screens.map((screen, i) => (
+        <Sequence
+          key={screen.id}
+          from={screenStarts[i]}
+          durationInFrames={screen.durationInFrames}
+        >
+          <TitleCard
+            textBoxes={screen.textBoxes}
+            durationInFrames={screen.durationInFrames}
+            textAnimationDuration={textAnimationDuration}
+          />
+        </Sequence>
+      ))}
     </AbsoluteFill>
   );
 };
