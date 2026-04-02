@@ -12,10 +12,29 @@ const textBoxSchema = z.object({
   letterSpacing: z.number().min(-0.2).max(0.5).default(-0.02),
 });
 
+const imageSchema = z.object({
+  id: z.string(),
+  src: z.string(),
+  xPercent: z.number().min(0).max(100),
+  yPercent: z.number().min(0).max(100),
+  scalePercent: z.number().min(1).max(100),
+});
+
+const lottieSchema = z.object({
+  id: z.string(),
+  src: z.string(),
+  xPercent: z.number().min(0).max(100),
+  yPercent: z.number().min(0).max(100),
+  scalePercent: z.number().min(1).max(100),
+  loop: z.boolean().default(true),
+});
+
 const screenSchema = z.object({
   id: z.string(),
   name: z.string(),
   textBoxes: z.array(textBoxSchema).default([]),
+  images: z.array(imageSchema).default([]),
+  lotties: z.array(lottieSchema).default([]),
   durationInFrames: z.number().min(15).max(300),
 });
 

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lottie Preview — logo-v1</title>
+  <style>
+    body { margin: 0; background: #111; display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; font-family: system-ui, sans-serif; color: #fff; }
+    #lottie { width: 500px; max-width: 90vw; }
+    .controls { margin-top: 16px; display: flex; gap: 8px; }
+    button { background: #333; color: #fff; border: 1px solid #555; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #444; }
+    p { color: #888; font-size: 13px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div id="lottie"></div>
+  <div class="controls">
+    <button onclick="anim.goToAndPlay(0, true)">Replay</button>
+    <button onclick="anim.pause()">Pause</button>
+    <button onclick="anim.play()">Play</button>
+  </div>
+  <p>logo-v1.json &mdash; 60fps, 1484&times;1263, frames 11&ndash;117</p>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script>
+    var anim = lottie.loadAnimation({
+      container: document.getElementById('lottie'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'logo-v1.json'
+    });
+  </script>
+</body>
+</html>

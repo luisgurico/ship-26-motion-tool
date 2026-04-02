@@ -7,6 +7,7 @@ interface DragOverlayProps {
   textBoxes: TextBox[];
   selectedTextBoxId: string | null;
   gridSize: number;
+  snapEnabled: boolean;
   onSelectTextBox: (id: string | null) => void;
   onMoveTextBox: (id: string, xPercent: number, yPercent: number) => void;
   onUpdateContent: (id: string, content: string) => void;
@@ -18,6 +19,7 @@ export const DragOverlay: React.FC<DragOverlayProps> = ({
   textBoxes,
   selectedTextBoxId,
   gridSize,
+  snapEnabled,
   onSelectTextBox,
   onMoveTextBox,
   onUpdateContent,
@@ -32,7 +34,8 @@ export const DragOverlay: React.FC<DragOverlayProps> = ({
 
   const gridStep = 100 / gridSize;
 
-  function snapToGrid(val: number): number {
+  function snap(val: number): number {
+    if (!snapEnabled) return val;
     return Math.round(val / gridStep) * gridStep;
   }
 
@@ -65,15 +68,15 @@ export const DragOverlay: React.FC<DragOverlayProps> = ({
     (e: React.MouseEvent) => {
       if (!dragId) return;
       const { x, y } = getPercents(e);
-      setDragX(snapToGrid(x));
-      setDragY(snapToGrid(y));
+      setDragX(snap(x));
+      setDragY(snap(y));
     },
     [dragId, getPercents, gridStep],
   );
 
   const handleMouseUp = useCallback(() => {
     if (dragId && dragX != null && dragY != null) {
-      onMoveTextBox(dragId, snapToGrid(dragX), snapToGrid(dragY));
+      onMoveTextBox(dragId, snap(dragX), snap(dragY));
     }
     setDragId(null);
     setDragX(null);
@@ -118,7 +121,7 @@ export const DragOverlay: React.FC<DragOverlayProps> = ({
     [onSelectTextBox],
   );
 
-  const showGrid = textBoxes.length > 0;
+  const showGrid = snapEnabled && textBoxes.length > 0;
 
   return (
     <div

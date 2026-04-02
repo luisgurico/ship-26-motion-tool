@@ -8,6 +8,7 @@ import {
   type PreviewPanelHandle,
 } from "@/components/editor/PreviewPanel";
 import { EditorViewport } from "@/components/editor/EditorViewport";
+import { DevPanel } from "@/components/editor/DevPanel";
 import { Timeline } from "@/components/editor/Timeline";
 import type { VideoFormatKey } from "@/lib/formats";
 import {
@@ -16,15 +17,29 @@ import {
   DEFAULT_DEV_CONFIG,
   DEFAULT_GENERAL_CONFIG,
   createTextBox,
+  createImageElement,
+  createLottieElement,
   type Screen,
   type StyleConfig,
   type DevConfig,
   type GeneralConfig,
   type TextBox,
+  type ImageElement,
+  type LottieElement,
 } from "@/types";
+import {
+  loadAutosave,
+  saveAutosave,
+  loadPresets,
+  addPreset,
+  deletePreset,
+  type Preset,
+  type EditorState,
+} from "@/lib/presets";
 
 export default function Home() {
-  const [format, setFormat] = useState<VideoFormatKey>("landscape");
+  const [hydrated, setHydrated] = useState(false);
+  const [format, setFormat] = useState<VideoFormatKey>("square");
   const [screens, setScreens] = useState<Screen[]>(DEFAULT_SCREENS);
   const [selectedScreenId, setSelectedScreenId] = useState<string | null>(
     DEFAULT_SCREENS[0]?.id ?? null
@@ -35,7 +50,57 @@ export default function Home() {
   const [styleConfig, setStyleConfig] = useState<StyleConfig>(DEFAULT_STYLE);
   const [devConfig, setDevConfig] = useState<DevConfig>(DEFAULT_DEV_CONFIG);
   const [generalConfig, setGeneralConfig] = useState<GeneralConfig>(DEFAULT_GENERAL_CONFIG);
+  const [presets, setPresets] = useState<Preset[]>([]);
+  const [showDev, setShowDev] = useState(false);
   const previewRef = useRef<PreviewPanelHandle>(null);
+
+  // Restore saved state after hydration
+  useEffect(() => {
+    const saved = loadAutosave();
+    if (saved) {
+      setFormat(saved.format);
+      setScreens(saved.screens);
+      setSelectedScreenId(saved.screens[0]?.id ?? null);
+      setSelectedTextBoxId(saved.screens[0]?.textBoxes[0]?.id ?? null);
+      setStyleConfig(saved.styleConfig);
+      setDevConfig(saved.devConfig);
+      setGeneralConfig(saved.generalConfig);
+    }
+    setPresets(loadPresets());
+    setHydrated(true);
+  }, []);
+
+  // Auto-save state to localStorage on changes (debounced)
+  useEffect(() => {
+    if (!hydrated) return;
+    const timer = setTimeout(() => {
+      saveAutosave({ format, screens, styleConfig, devConfig, generalConfig });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [hydrated, format, screens, styleConfig, devConfig, generalConfig]);
+
+  const handleSavePreset = useCallback(
+    (name: string) => {
+      const preset = addPreset(name, { format, screens, styleConfig, devConfig, generalConfig });
+      setPresets((prev) => [preset, ...prev]);
+    },
+    [format, screens, styleConfig, devConfig, generalConfig]
+  );
+
+  const handleLoadPreset = useCallback((preset: Preset) => {
+    setFormat(preset.format);
+    setScreens(preset.screens);
+    setStyleConfig(preset.styleConfig);
+    setDevConfig(preset.devConfig);
+    setGeneralConfig(preset.generalConfig);
+    setSelectedScreenId(preset.screens[0]?.id ?? null);
+    setSelectedTextBoxId(preset.screens[0]?.textBoxes[0]?.id ?? null);
+  }, []);
+
+  const handleDeletePreset = useCallback((id: string) => {
+    deletePreset(id);
+    setPresets((prev) => prev.filter((p) => p.id !== id));
+  }, []);
 
   const selectedScreen = useMemo(
     () => screens.find((s) => s.id === selectedScreenId) ?? null,
@@ -51,8 +116,9 @@ export default function Home() {
     }
   }, [selectedScreenId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-snap all text box positions when grid size changes
+  // Auto-snap all text box positions when grid size changes (only if snap is on)
   useEffect(() => {
+    if (!generalConfig.snapEnabled) return;
     const gridStep = 100 / generalConfig.gridSize;
     const snap = (v: number) => Math.round(v / gridStep) * gridStep;
     setScreens((prev) =>
@@ -65,7 +131,7 @@ export default function Home() {
         })),
       }))
     );
-  }, [generalConfig.gridSize]);
+  }, [generalConfig.gridSize, generalConfig.snapEnabled]);
 
   const handleStyleConfigChange = useCallback(
     (patch: Partial<StyleConfig>) => {
@@ -170,6 +236,82 @@ export default function Home() {
     [selectedTextBoxId]
   );
 
+  const handleImageAdd = useCallback(
+    (screenId: string) => {
+      const img = createImageElement();
+      setScreens((prev) =>
+        prev.map((s) =>
+          s.id === screenId ? { ...s, images: [...(s.images ?? []), img] } : s
+        )
+      );
+    },
+    []
+  );
+
+  const handleImageUpdate = useCallback(
+    (screenId: string, imageId: string, patch: Partial<ImageElement>) => {
+      setScreens((prev) =>
+        prev.map((s) =>
+          s.id === screenId
+            ? { ...s, images: (s.images ?? []).map((i) => (i.id === imageId ? { ...i, ...patch } : i)) }
+            : s
+        )
+      );
+    },
+    []
+  );
+
+  const handleImageRemove = useCallback(
+    (screenId: string, imageId: string) => {
+      setScreens((prev) =>
+        prev.map((s) =>
+          s.id === screenId
+            ? { ...s, images: (s.images ?? []).filter((i) => i.id !== imageId) }
+            : s
+        )
+      );
+    },
+    []
+  );
+
+  const handleLottieAdd = useCallback(
+    (screenId: string) => {
+      const lt = createLottieElement();
+      setScreens((prev) =>
+        prev.map((s) =>
+          s.id === screenId ? { ...s, lotties: [...(s.lotties ?? []), lt] } : s
+        )
+      );
+    },
+    []
+  );
+
+  const handleLottieUpdate = useCallback(
+    (screenId: string, lottieId: string, patch: Partial<LottieElement>) => {
+      setScreens((prev) =>
+        prev.map((s) =>
+          s.id === screenId
+            ? { ...s, lotties: (s.lotties ?? []).map((l) => (l.id === lottieId ? { ...l, ...patch } : l)) }
+            : s
+        )
+      );
+    },
+    []
+  );
+
+  const handleLottieRemove = useCallback(
+    (screenId: string, lottieId: string) => {
+      setScreens((prev) =>
+        prev.map((s) =>
+          s.id === screenId
+            ? { ...s, lotties: (s.lotties ?? []).filter((l) => l.id !== lottieId) }
+            : s
+        )
+      );
+    },
+    []
+  );
+
   const handleGeneralConfigChange = useCallback(
     (patch: Partial<GeneralConfig>) => {
       setGeneralConfig((prev) => ({ ...prev, ...patch }));
@@ -219,25 +361,35 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Toolbar format={format} onFormatChange={setFormat} />
+      <Toolbar showDev={showDev} onToggleDev={() => setShowDev((v) => !v)} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
+          format={format}
+          onFormatChange={setFormat}
           selectedScreen={selectedScreen}
           styleConfig={styleConfig}
-          devConfig={devConfig}
           generalConfig={generalConfig}
           selectedTextBoxId={selectedTextBoxId}
           onSelectTextBox={setSelectedTextBoxId}
           onScreenUpdate={handleScreenUpdate}
           onStyleConfigChange={handleStyleConfigChange}
-          onDevConfigChange={handleDevConfigChange}
           onGeneralConfigChange={handleGeneralConfigChange}
           onTextBoxUpdate={handleTextBoxUpdate}
           onTextBoxAdd={handleTextBoxAdd}
           onTextBoxRemove={handleTextBoxRemove}
+          onImageAdd={handleImageAdd}
+          onImageUpdate={handleImageUpdate}
+          onImageRemove={handleImageRemove}
+          onLottieAdd={handleLottieAdd}
+          onLottieUpdate={handleLottieUpdate}
+          onLottieRemove={handleLottieRemove}
+          presets={presets}
+          onSavePreset={handleSavePreset}
+          onLoadPreset={handleLoadPreset}
+          onDeletePreset={handleDeletePreset}
         />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 flex items-center justify-center gap-6 bg-zinc-950 overflow-auto p-6">
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          <div className="flex-1 flex items-start justify-center gap-6 bg-black overflow-auto p-6 pt-12">
             <EditorViewport
               format={format}
               inputProps={inputProps}
@@ -250,6 +402,7 @@ export default function Home() {
               onMoveTextBox={handleTextBoxMove}
               onUpdateContent={handleTextBoxContentUpdate}
               gridSize={generalConfig.gridSize}
+              snapEnabled={generalConfig.snapEnabled}
             />
             <PreviewPanel
               ref={previewRef}
@@ -257,16 +410,24 @@ export default function Home() {
               inputProps={inputProps}
               durationInFrames={totalDuration}
             />
-          </main>
-          <Timeline
-            screens={screens}
-            selectedScreenId={selectedScreenId}
-            onSelect={handleScreenSelect}
-            onAdd={handleScreenAdd}
-            onRemove={handleScreenRemove}
-            onReorder={setScreens}
-          />
+          </div>
+          <div className="shrink-0">
+            <Timeline
+              screens={screens}
+              selectedScreenId={selectedScreenId}
+              onSelect={handleScreenSelect}
+              onAdd={handleScreenAdd}
+              onRemove={handleScreenRemove}
+              onReorder={setScreens}
+            />
+          </div>
         </div>
+        {showDev && (
+          <DevPanel
+            devConfig={devConfig}
+            onDevConfigChange={handleDevConfigChange}
+          />
+        )}
       </div>
     </div>
   );

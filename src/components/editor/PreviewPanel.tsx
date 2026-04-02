@@ -110,7 +110,7 @@ export const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
             max={Math.max(durationInFrames - 1, 0)}
             value={currentFrame}
             onChange={handleScrub}
-            className="w-full h-1.5 accent-blue-500 cursor-pointer"
+            className="w-full h-1.5 accent-white cursor-pointer"
           />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

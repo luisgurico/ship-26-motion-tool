@@ -1,8 +1,9 @@
 import React from "react";
-import { AbsoluteFill, Sequence, useVideoConfig } from "remotion";
+import { AbsoluteFill, Sequence, useVideoConfig, Img, staticFile } from "remotion";
 import type { SocialPromoProps } from "./schemas";
-import type { TextBox } from "@/types";
+import type { TextBox, ImageElement, LottieElement as LottieElementType } from "@/types";
 import { AnimatedText } from "../elements/AnimatedText";
+import { LottieElement } from "../elements/LottieElement";
 import { loadProjectFonts } from "@/lib/fonts";
 
 loadProjectFonts();
@@ -25,9 +26,11 @@ function getTranslate(justification: string): string {
 
 const TitleCard: React.FC<{
   textBoxes: TextBox[];
+  images: ImageElement[];
+  lotties: LottieElementType[];
   durationInFrames: number;
   textAnimationDuration: number;
-}> = ({ textBoxes, durationInFrames, textAnimationDuration }) => {
+}> = ({ textBoxes, images, lotties, durationInFrames, textAnimationDuration }) => {
   const { width, height } = useVideoConfig();
 
   const inDelay = 0;
@@ -35,6 +38,58 @@ const TitleCard: React.FC<{
 
   return (
     <AbsoluteFill>
+      {/* Images */}
+      {images.map((img) => {
+        const leftPx = (img.xPercent / 100) * width;
+        const topPx = (img.yPercent / 100) * height;
+        const scale = img.scalePercent ?? (img as any).widthPercent ?? 30;
+        const size = (scale / 100) * Math.min(width, height);
+        const w = size;
+        const h = size;
+        const src = img.src.startsWith("http") ? img.src : staticFile(img.src);
+        return (
+          <div
+            key={img.id}
+            style={{
+              position: "absolute",
+              left: leftPx,
+              top: topPx,
+              width: w,
+              height: h,
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <Img src={src} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          </div>
+        );
+      })}
+
+      {/* Lotties */}
+      {lotties.map((lt) => {
+        const leftPx = (lt.xPercent / 100) * width;
+        const topPx = (lt.yPercent / 100) * height;
+        const scale = lt.scalePercent ?? (lt as any).widthPercent ?? 40;
+        const size = (scale / 100) * Math.min(width, height);
+        const w = size;
+        const h = size;
+        return (
+          <div
+            key={lt.id}
+            style={{
+              position: "absolute",
+              left: leftPx,
+              top: topPx,
+              width: w,
+              height: h,
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <LottieElement src={lt.src} loop={lt.loop} />
+          </div>
+        );
+      })}
+
+      {/* Text boxes */}
       {textBoxes.map((tb) => {
         const leftPx = (tb.xPercent / 100) * width;
         const topPx = (tb.yPercent / 100) * height;
@@ -95,6 +150,8 @@ export const SocialPromo: React.FC<SocialPromoProps> = ({
         >
           <TitleCard
             textBoxes={screen.textBoxes}
+            images={screen.images ?? []}
+            lotties={screen.lotties ?? []}
             durationInFrames={screen.durationInFrames}
             textAnimationDuration={textAnimationDuration}
           />

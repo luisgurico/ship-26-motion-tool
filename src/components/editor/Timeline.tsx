@@ -82,14 +82,14 @@ export const Timeline: React.FC<TimelineProps> = ({
             onClick={() => onSelect(screen.id)}
             className={cn(
               "group relative flex items-center gap-1.5 rounded-md border px-3 py-2 cursor-pointer transition-all select-none shrink-0",
-              "hover:border-zinc-500",
+              "hover:border-white/20",
               selectedScreenId === screen.id
-                ? "border-blue-500 bg-blue-500/10"
+                ? "border-white/40 bg-white/5"
                 : "border-border bg-accent",
               dragId === screen.id && "opacity-40",
               dragOverId === screen.id &&
                 dragId !== screen.id &&
-                "border-blue-400 border-dashed"
+                "border-white/30 border-dashed"
             )}
           >
             <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 cursor-grab" />
@@ -102,7 +102,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                   e.stopPropagation();
                   onRemove(screen.id);
                 }}
-                className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-zinc-700 text-zinc-300 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-600 hover:text-white transition-all"
+                className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-white/10 text-white/50 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-600 hover:text-white transition-all"
               >
                 <X className="h-2.5 w-2.5" />
               </button>

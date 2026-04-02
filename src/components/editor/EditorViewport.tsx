@@ -20,6 +20,7 @@ interface EditorViewportProps {
   onMoveTextBox: (id: string, xPercent: number, yPercent: number) => void;
   onUpdateContent: (id: string, content: string) => void;
   gridSize: number;
+  snapEnabled: boolean;
 }
 
 export const EditorViewport: React.FC<EditorViewportProps> = ({
@@ -34,6 +35,7 @@ export const EditorViewport: React.FC<EditorViewportProps> = ({
   onMoveTextBox,
   onUpdateContent,
   gridSize,
+  snapEnabled,
 }) => {
   const videoFormat = VIDEO_FORMATS[format];
 
@@ -77,6 +79,7 @@ export const EditorViewport: React.FC<EditorViewportProps> = ({
           textBoxes={textBoxes}
           selectedTextBoxId={selectedTextBoxId}
           gridSize={gridSize}
+          snapEnabled={snapEnabled}
           onSelectTextBox={onSelectTextBox}
           onMoveTextBox={onMoveTextBox}
           onUpdateContent={onUpdateContent}
