@@ -21,7 +21,7 @@ interface PreviewPanelProps {
 export const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
   ({ format, inputProps, durationInFrames }, ref) => {
     const playerRef = React.useRef<PlayerRef>(null);
-    const [playing, setPlaying] = useState(true);
+    const [playing, setPlaying] = useState(false);
     const [currentFrame, setCurrentFrame] = useState(0);
     const videoFormat = VIDEO_FORMATS[format];
 
@@ -99,7 +99,6 @@ export const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
             compositionHeight={videoFormat.height}
             style={{ width: "100%", height: "100%" }}
             loop
-            autoPlay
             acknowledgeRemotionLicense
           />
         </div>
