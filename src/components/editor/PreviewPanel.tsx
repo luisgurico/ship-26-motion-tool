@@ -21,7 +21,7 @@ interface PreviewPanelProps {
 export const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
   ({ format, inputProps, durationInFrames }, ref) => {
     const playerRef = React.useRef<PlayerRef>(null);
-    const [playing, setPlaying] = useState(false);
+    const [playing, setPlaying] = useState(true);
     const [currentFrame, setCurrentFrame] = useState(0);
     const videoFormat = VIDEO_FORMATS[format];
 
@@ -43,13 +43,13 @@ export const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       const onPlay = () => setPlaying(true);
       const onPause = () => setPlaying(false);
 
-      player.addEventListener("frameupdate", onFrame as never);
-      player.addEventListener("play", onPlay as never);
-      player.addEventListener("pause", onPause as never);
+      player.addEventListener("frameupdate", onFrame);
+      player.addEventListener("play", onPlay);
+      player.addEventListener("pause", onPause);
       return () => {
-        player.removeEventListener("frameupdate", onFrame as never);
-        player.removeEventListener("play", onPlay as never);
-        player.removeEventListener("pause", onPause as never);
+        player.removeEventListener("frameupdate", onFrame);
+        player.removeEventListener("play", onPlay);
+        player.removeEventListener("pause", onPause);
       };
     }, []);
 

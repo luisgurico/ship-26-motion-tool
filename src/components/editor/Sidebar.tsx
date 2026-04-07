@@ -18,6 +18,9 @@ import { VIDEO_FORMATS, type VideoFormatKey } from "@/lib/formats";
 import { ScreenFields } from "./ScreenFields";
 import type { Screen, StyleConfig, GeneralConfig, TextBox, ImageElement, LottieElement } from "@/types";
 import type { Preset } from "@/lib/presets";
+import { BUILT_IN_PRESETS } from "@/lib/built-in-presets";
+
+const BUILT_IN_IDS = new Set(BUILT_IN_PRESETS.map((p) => p.id));
 
 const formatIcons: Record<VideoFormatKey, React.ReactNode> = {
   landscape: <Monitor className="h-3.5 w-3.5" />,
@@ -49,6 +52,9 @@ interface SidebarProps {
   onSavePreset: (name: string) => void;
   onLoadPreset: (preset: Preset) => void;
   onDeletePreset: (id: string) => void;
+  onUpdatePreset: (id: string) => void;
+  onResetToDefault: () => void;
+  onSyncToCode: () => void;
 }
 
 function ColorField({
@@ -102,6 +108,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSavePreset,
   onLoadPreset,
   onDeletePreset,
+  onUpdatePreset,
+  onResetToDefault,
+  onSyncToCode,
 }) => {
   const [presetName, setPresetName] = useState("");
 
@@ -213,7 +222,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     value={presetName}
                     onChange={(e) => setPresetName(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && presetName.trim()) {
+                      if (e.key === "Enter" && presetName.trim() && !presets.some((p) => p.name === presetName.trim())) {
                         onSavePreset(presetName.trim());
                         setPresetName("");
                       }
@@ -223,7 +232,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     variant="secondary"
                     size="sm"
                     className="shrink-0"
-                    disabled={!presetName.trim()}
+                    disabled={!presetName.trim() || presets.some((p) => p.name === presetName.trim())}
                     onClick={() => {
                       onSavePreset(presetName.trim());
                       setPresetName("");
@@ -232,15 +241,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     Save
                   </Button>
                 </div>
+                {presetName.trim() && presets.some((p) => p.name === presetName.trim()) && (
+                  <span className="text-[10px] text-red-400 font-mono">
+                    Name already exists
+                  </span>
+                )}
               </div>
 
               <div className="border-t border-border pt-4 mt-2" />
 
-              <div className="flex items-center gap-2 mb-1">
-                <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-                  Auto-restore on refresh is active
-                </span>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                  <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+                    {presets.some((p) => p.name === "Default" && p.createdAt > 0)
+                      ? "Saved Default loads on refresh"
+                      : "Code defaults load on refresh"}
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onSyncToCode}
+                  >
+                    Sync to Code
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onResetToDefault}
+                  >
+                    Reset
+                  </Button>
+                </div>
               </div>
 
               {presets.length === 0 ? (
@@ -249,39 +283,60 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </p>
               ) : (
                 <div className="flex flex-col gap-2">
-                  {presets.map((p) => (
-                    <div
-                      key={p.id}
-                      className="flex items-center justify-between gap-2 rounded border border-border p-2"
-                    >
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-mono text-foreground truncate">
-                          {p.name}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          {p.screens.length} screens &middot;{" "}
-                          {new Date(p.createdAt).toLocaleDateString()}
-                        </span>
+                  {presets.map((p) => {
+                    const isBuiltIn = BUILT_IN_IDS.has(p.id);
+                    return (
+                      <div
+                        key={p.id}
+                        className="flex items-center justify-between gap-2 rounded border border-border p-2"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-mono text-foreground truncate">
+                              {p.name}
+                            </span>
+                            {isBuiltIn && (
+                              <span className="text-[9px] font-mono text-muted-foreground bg-accent rounded px-1 py-0.5 shrink-0">
+                                built-in
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {p.screens.length} screens
+                            {p.createdAt > 0 && (
+                              <> &middot; {new Date(p.createdAt).toLocaleString()}</>
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onLoadPreset(p)}
+                          >
+                            Load
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onUpdatePreset(p.id)}
+                          >
+                            Update
+                          </Button>
+                          {!isBuiltIn && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-400 hover:text-red-300"
+                              onClick={() => onDeletePreset(p.id)}
+                            >
+                              &times;
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex gap-1 shrink-0">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onLoadPreset(p)}
-                        >
-                          Load
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-400 hover:text-red-300"
-                          onClick={() => onDeletePreset(p.id)}
-                        >
-                          &times;
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

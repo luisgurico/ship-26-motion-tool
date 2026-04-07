@@ -28,17 +28,16 @@ import {
   type LottieElement,
 } from "@/types";
 import {
-  loadAutosave,
-  saveAutosave,
   loadPresets,
   addPreset,
   deletePreset,
+  updatePreset,
+  findPresetByName,
   type Preset,
-  type EditorState,
 } from "@/lib/presets";
+import { BUILT_IN_PRESETS } from "@/lib/built-in-presets";
 
 export default function Home() {
-  const [hydrated, setHydrated] = useState(false);
   const [format, setFormat] = useState<VideoFormatKey>("square");
   const [screens, setScreens] = useState<Screen[]>(DEFAULT_SCREENS);
   const [selectedScreenId, setSelectedScreenId] = useState<string | null>(
@@ -54,30 +53,20 @@ export default function Home() {
   const [showDev, setShowDev] = useState(false);
   const previewRef = useRef<PreviewPanelHandle>(null);
 
-  // Restore saved state after hydration
+  // Restore saved state after hydration — load Default preset (user override or built-in)
   useEffect(() => {
-    const saved = loadAutosave();
-    if (saved) {
-      setFormat(saved.format);
-      setScreens(saved.screens);
-      setSelectedScreenId(saved.screens[0]?.id ?? null);
-      setSelectedTextBoxId(saved.screens[0]?.textBoxes[0]?.id ?? null);
-      setStyleConfig(saved.styleConfig);
-      setDevConfig(saved.devConfig);
-      setGeneralConfig(saved.generalConfig);
+    const defaultPreset = findPresetByName("Default");
+    if (defaultPreset) {
+      setFormat(defaultPreset.format);
+      setScreens(defaultPreset.screens);
+      setSelectedScreenId(defaultPreset.screens[0]?.id ?? null);
+      setSelectedTextBoxId(defaultPreset.screens[0]?.textBoxes[0]?.id ?? null);
+      setStyleConfig(defaultPreset.styleConfig);
+      setDevConfig(defaultPreset.devConfig);
+      setGeneralConfig(defaultPreset.generalConfig);
     }
     setPresets(loadPresets());
-    setHydrated(true);
   }, []);
-
-  // Auto-save state to localStorage on changes (debounced)
-  useEffect(() => {
-    if (!hydrated) return;
-    const timer = setTimeout(() => {
-      saveAutosave({ format, screens, styleConfig, devConfig, generalConfig });
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [hydrated, format, screens, styleConfig, devConfig, generalConfig]);
 
   const handleSavePreset = useCallback(
     (name: string) => {
@@ -97,10 +86,48 @@ export default function Home() {
     setSelectedTextBoxId(preset.screens[0]?.textBoxes[0]?.id ?? null);
   }, []);
 
+  const handleUpdatePreset = useCallback(
+    (id: string) => {
+      const updated = updatePreset(id, { format, screens, styleConfig, devConfig, generalConfig });
+      if (updated) {
+        setPresets((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      }
+    },
+    [format, screens, styleConfig, devConfig, generalConfig]
+  );
+
   const handleDeletePreset = useCallback((id: string) => {
     deletePreset(id);
     setPresets((prev) => prev.filter((p) => p.id !== id));
   }, []);
+
+  const handleResetToDefault = useCallback(() => {
+    const builtInDefault = BUILT_IN_PRESETS.find((p) => p.name === "Default");
+    if (!builtInDefault) return;
+    setFormat(builtInDefault.format);
+    setScreens(builtInDefault.screens);
+    setStyleConfig(builtInDefault.styleConfig);
+    setDevConfig(builtInDefault.devConfig);
+    setGeneralConfig(builtInDefault.generalConfig);
+    setSelectedScreenId(builtInDefault.screens[0]?.id ?? null);
+    setSelectedTextBoxId(builtInDefault.screens[0]?.textBoxes[0]?.id ?? null);
+    // Delete user override so built-in loads on next refresh
+    deletePreset("built-in-default");
+    setPresets(loadPresets());
+  }, []);
+
+  const handleSyncToCode = useCallback(async () => {
+    try {
+      const res = await fetch("/api/presets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ format, screens, styleConfig, devConfig, generalConfig }),
+      });
+      if (!res.ok) throw new Error("Failed to sync");
+    } catch (err) {
+      console.error("Sync to code failed:", err);
+    }
+  }, [format, screens, styleConfig, devConfig, generalConfig]);
 
   const selectedScreen = useMemo(
     () => screens.find((s) => s.id === selectedScreenId) ?? null,
@@ -387,6 +414,9 @@ export default function Home() {
           onSavePreset={handleSavePreset}
           onLoadPreset={handleLoadPreset}
           onDeletePreset={handleDeletePreset}
+          onUpdatePreset={handleUpdatePreset}
+          onResetToDefault={handleResetToDefault}
+          onSyncToCode={handleSyncToCode}
         />
         <div className="flex-1 flex flex-col overflow-hidden relative">
           <div className="flex-1 flex items-start justify-center gap-6 bg-black overflow-auto p-6 pt-12">

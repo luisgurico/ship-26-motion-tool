@@ -1,5 +1,6 @@
 import type { Screen, StyleConfig, DevConfig, GeneralConfig } from "@/types";
 import type { VideoFormatKey } from "@/lib/formats";
+import { BUILT_IN_PRESETS } from "./built-in-presets";
 
 export interface Preset {
   id: string;
@@ -21,19 +22,32 @@ export interface EditorState {
 }
 
 const PRESETS_KEY = "ship26-presets";
-const AUTOSAVE_KEY = "ship26-autosave";
 
-export function loadPresets(): Preset[] {
+/** Load user presets from localStorage, deduplicating by ID (keeps most recent) */
+function loadUserPresets(): Preset[] {
   try {
     const raw = localStorage.getItem(PRESETS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed: Preset[] = JSON.parse(raw);
+    const byId = new Map<string, Preset>();
+    for (const p of parsed) {
+      const existing = byId.get(p.id);
+      if (!existing || p.createdAt > existing.createdAt) {
+        byId.set(p.id, p);
+      }
+    }
+    return Array.from(byId.values());
   } catch {
     return [];
   }
 }
 
-export function savePresets(presets: Preset[]): void {
-  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+/** Load all presets: user presets first, then built-in presets (skipping duplicates by name) */
+export function loadPresets(): Preset[] {
+  const userPresets = loadUserPresets();
+  const userNames = new Set(userPresets.map((p) => p.name));
+  const builtIn = BUILT_IN_PRESETS.filter((p) => !userNames.has(p.name));
+  return [...userPresets, ...builtIn];
 }
 
 export function addPreset(name: string, state: EditorState): Preset {
@@ -43,26 +57,47 @@ export function addPreset(name: string, state: EditorState): Preset {
     ...state,
     createdAt: Date.now(),
   };
-  const presets = loadPresets();
-  presets.unshift(preset);
-  savePresets(presets);
+  const userPresets = loadUserPresets();
+  userPresets.unshift(preset);
+  localStorage.setItem(PRESETS_KEY, JSON.stringify(userPresets));
   return preset;
 }
 
-export function deletePreset(id: string): void {
-  const presets = loadPresets().filter((p) => p.id !== id);
-  savePresets(presets);
-}
+export function updatePreset(id: string, state: EditorState): Preset | null {
+  const userPresets = loadUserPresets();
 
-export function loadAutosave(): EditorState | null {
-  try {
-    const raw = localStorage.getItem(AUTOSAVE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
+  // For built-in presets, create or replace a user override
+  const builtIn = BUILT_IN_PRESETS.find((p) => p.id === id);
+  if (builtIn) {
+    const override: Preset = { ...builtIn, ...state, createdAt: Date.now() };
+    const existingIndex = userPresets.findIndex((p) => p.id === id);
+    if (existingIndex !== -1) {
+      userPresets[existingIndex] = override;
+    } else {
+      userPresets.unshift(override);
+    }
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(userPresets));
+    return override;
   }
+
+  // For user presets, update in-place
+  const index = userPresets.findIndex((p) => p.id === id);
+  if (index === -1) return null;
+  userPresets[index] = { ...userPresets[index], ...state, createdAt: Date.now() };
+  localStorage.setItem(PRESETS_KEY, JSON.stringify(userPresets));
+  return userPresets[index];
 }
 
-export function saveAutosave(state: EditorState): void {
-  localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+export function deletePreset(id: string): void {
+  const userPresets = loadUserPresets().filter((p) => p.id !== id);
+  localStorage.setItem(PRESETS_KEY, JSON.stringify(userPresets));
+}
+
+export function findPresetByName(name: string): Preset | null {
+  // User presets take priority so UI updates persist across refreshes
+  const userPresets = loadUserPresets();
+  const found = userPresets.find((p) => p.name === name);
+  if (found) return found;
+  // Fall back to built-in preset (code defaults) for fresh installs
+  return BUILT_IN_PRESETS.find((p) => p.name === name) ?? null;
 }
