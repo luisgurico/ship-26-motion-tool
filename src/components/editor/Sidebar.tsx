@@ -128,9 +128,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <TabsTrigger value="content" className="flex-1 px-1.5">
               Content
             </TabsTrigger>
-            <TabsTrigger value="style" className="flex-1 px-1.5">
-              Style
-            </TabsTrigger>
             <TabsTrigger value="general" className="flex-1 px-1.5">
               General
             </TabsTrigger>
@@ -168,77 +165,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </TabsContent>
 
-          <TabsContent value="style">
-            <div className="flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <ColorField
-                  label="Primary"
-                  value={styleConfig.primaryColor}
-                  onChange={(v) => onStyleConfigChange({ primaryColor: v })}
-                />
-                <ColorField
-                  label="Secondary"
-                  value={styleConfig.secondaryColor}
-                  onChange={(v) => onStyleConfigChange({ secondaryColor: v })}
-                />
-                <ColorField
-                  label="Background"
-                  value={styleConfig.backgroundColor}
-                  onChange={(v) => onStyleConfigChange({ backgroundColor: v })}
-                />
-                <ColorField
-                  label="Text"
-                  value={styleConfig.textColor}
-                  onChange={(v) => onStyleConfigChange({ textColor: v })}
-                />
-                <ColorField
-                  label="Accent"
-                  value={styleConfig.accentColor}
-                  onChange={(v) => onStyleConfigChange({ accentColor: v })}
-                />
-              </div>
-
-              <div className="border-t border-border pt-4 mt-2" />
-
-              <div className="flex flex-col gap-1.5">
-                <Label>Pattern</Label>
-                <Select
-                  value={styleConfig.patternStyle}
-                  onValueChange={(v) =>
-                    onStyleConfigChange({
-                      patternStyle: v as StyleConfig["patternStyle"],
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="grid">Grid</SelectItem>
-                    <SelectItem value="dots">Dots</SelectItem>
-                    <SelectItem value="lines">Lines</SelectItem>
-                    <SelectItem value="waves">Waves</SelectItem>
-                    <SelectItem value="none">None</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <Label>
-                  Transition Speed: {styleConfig.transitionSpeed}x
-                </Label>
-                <Slider
-                  value={[styleConfig.transitionSpeed]}
-                  onValueChange={([v]) =>
-                    onStyleConfigChange({ transitionSpeed: v })
-                  }
-                  min={0.5}
-                  max={3}
-                  step={0.1}
-                />
-              </div>
-            </div>
-          </TabsContent>
 
           <TabsContent value="general">
             <div className="flex flex-col gap-4">

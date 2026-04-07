@@ -80,7 +80,7 @@ export function createLottieElement(src = "/lottie/test-v2.json"): LottieElement
     xPercent: 50,
     yPercent: 50,
     scalePercent: 40,
-    loop: true,
+    loop: false,
   };
 }
 
@@ -96,8 +96,8 @@ export function createScreen(name = "New Screen", content = "Text"): Screen {
 }
 
 export const DEFAULT_SCREENS: Screen[] = [
-  { id: "1", name: "Intro", textBoxes: [], images: [], lotties: [{ id: "1l", src: "/lottie/test-v2.json", xPercent: 50, yPercent: 50, scalePercent: 40, loop: true }], durationInFrames: 75 },
-  { id: "2", name: "Tagline", textBoxes: [{ id: "2a", content: "Ship what's next", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], images: [], lotties: [], durationInFrames: 75 },
+  { id: "1", name: "Intro", textBoxes: [], images: [], lotties: [{ id: "1l", src: "/lottie/test-v2.json", xPercent: 50, yPercent: 50, scalePercent: 40, loop: false }], durationInFrames: 75 },
+  { id: "2", name: "Tagline", textBoxes: [{ id: "2a", content: "SHIP WHAT\u2019S NEXT\nLEARN TO BUILD, DEPLOY,\nAND SCALE YOUR AGENTS.\nVERCEL.COM/SHIP", xPercent: 8.3, yPercent: 79.9, justification: "left", fontSize: 36, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.01 }, { id: "2b", content: "[OK] 17.26\n[OK] OUTERNET\n[OK] LDN\n[OK] W1 3DJ", xPercent: 67.2, yPercent: 77.7, justification: "left", fontSize: 36, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.01 }], images: [], lotties: [], durationInFrames: 75 },
   { id: "3", name: "Location", textBoxes: [{ id: "3a", content: "London", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], images: [], lotties: [], durationInFrames: 75 },
   { id: "4", name: "URL", textBoxes: [{ id: "4a", content: "vercel.com/ship", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], images: [], lotties: [], durationInFrames: 75 },
   { id: "5", name: "Outro", textBoxes: [{ id: "5a", content: "Ship 26", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], images: [], lotties: [], durationInFrames: 75 },

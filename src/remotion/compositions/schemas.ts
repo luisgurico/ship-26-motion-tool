@@ -26,7 +26,7 @@ const lottieSchema = z.object({
   xPercent: z.number().min(0).max(100),
   yPercent: z.number().min(0).max(100),
   scalePercent: z.number().min(1).max(100),
-  loop: z.boolean().default(true),
+  loop: z.boolean().default(false),
 });
 
 const screenSchema = z.object({
