@@ -13,7 +13,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import type { Screen, TextBox, TextJustification, ImageElement, LottieElement } from "@/types";
+import type { Screen, TextBox, TextJustification, ImageElement, LottieElement, ImageRevealConfig, RevealDirection, RevealWipeMode } from "@/types";
+import { createDefaultRevealConfig } from "@/types";
 import { FONT_OPTIONS } from "@/lib/fonts";
 
 interface ScreenFieldsProps {
@@ -281,6 +282,142 @@ export const ScreenFields: React.FC<ScreenFieldsProps> = ({
             <Field label={`Scale: ${img.scalePercent}%`}>
               <Slider value={[img.scalePercent]} onValueChange={([v]) => onImageUpdate(screen.id, img.id, { scalePercent: v })} min={1} max={100} step={1} />
             </Field>
+
+            {/* Reveal Animation */}
+            <div className="flex items-center justify-between">
+              <Label>Pixel Reveal</Label>
+              <Button
+                variant={img.reveal?.enabled ? "secondary" : "outline"}
+                size="sm"
+                className="h-7"
+                onClick={() => {
+                  const current = img.reveal ?? createDefaultRevealConfig();
+                  onImageUpdate(screen.id, img.id, { reveal: { ...current, enabled: !current.enabled } });
+                }}
+              >
+                {img.reveal?.enabled ? "On" : "Off"}
+              </Button>
+            </div>
+
+            {img.reveal?.enabled && (() => {
+              const rev = img.reveal!;
+              const updateReveal = (patch: Partial<ImageRevealConfig>) =>
+                onImageUpdate(screen.id, img.id, { reveal: { ...rev, ...patch } });
+              return (
+                <div className="flex flex-col gap-2 pl-2 border-l border-border">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Direction</Label>
+                    <div className="flex gap-1">
+                      {(["in", "out"] as RevealDirection[]).map((d) => (
+                        <Button
+                          key={d}
+                          variant={rev.direction === d ? "default" : "outline"}
+                          size="sm"
+                          className="h-6 px-2 text-[10px]"
+                          onClick={() => updateReveal({ direction: d })}
+                        >
+                          {d.toUpperCase()}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Wipe Mode</Label>
+                    <div className="flex gap-1">
+                      {(["linear", "random"] as RevealWipeMode[]).map((m) => (
+                        <Button
+                          key={m}
+                          variant={rev.wipeMode === m ? "default" : "outline"}
+                          size="sm"
+                          className="h-6 px-2 text-[10px]"
+                          onClick={() => updateReveal({ wipeMode: m })}
+                        >
+                          {m.charAt(0).toUpperCase() + m.slice(1)}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <Field label={`Duration: ${rev.durationInFrames}f`}>
+                    <Slider value={[rev.durationInFrames]} onValueChange={([v]) => updateReveal({ durationInFrames: v })} min={5} max={150} step={5} />
+                  </Field>
+                  <Field label={`Delay: ${rev.delayInFrames}f`}>
+                    <Slider value={[rev.delayInFrames]} onValueChange={([v]) => updateReveal({ delayInFrames: v })} min={0} max={150} step={1} />
+                  </Field>
+                  <Field label={`Min Block: ${rev.minBlockSize}`}>
+                    <Slider value={[rev.minBlockSize]} onValueChange={([v]) => updateReveal({ minBlockSize: v })} min={2} max={64} step={2} />
+                  </Field>
+                  <Field label={`Max Block: ${rev.maxBlockSize}`}>
+                    <Slider value={[rev.maxBlockSize]} onValueChange={([v]) => updateReveal({ maxBlockSize: v })} min={16} max={512} step={16} />
+                  </Field>
+                  <Field label={`Sensitivity Min: ${rev.sensitivityMin}`}>
+                    <Slider value={[rev.sensitivityMin]} onValueChange={([v]) => updateReveal({ sensitivityMin: v })} min={1} max={100} step={1} />
+                  </Field>
+                  <Field label={`Sensitivity Max: ${rev.sensitivityMax}`}>
+                    <Slider value={[rev.sensitivityMax]} onValueChange={([v]) => updateReveal({ sensitivityMax: v })} min={1} max={100} step={1} />
+                  </Field>
+                  <Field label={`Overlap: ${rev.overlapPercent}%`}>
+                    <Slider value={[rev.overlapPercent]} onValueChange={([v]) => updateReveal({ overlapPercent: v })} min={0} max={100} step={5} />
+                  </Field>
+                  <Field label={`Soft Zone: ${rev.softZone}`}>
+                    <Slider value={[rev.softZone]} onValueChange={([v]) => updateReveal({ softZone: v })} min={20} max={300} step={10} />
+                  </Field>
+                  <Field label={`Wave Gap: ${rev.waveGap}`}>
+                    <Slider value={[rev.waveGap]} onValueChange={([v]) => updateReveal({ waveGap: v })} min={20} max={400} step={10} />
+                  </Field>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Stroke</Label>
+                    <Button
+                      variant={rev.strokeEnabled ? "secondary" : "outline"}
+                      size="sm"
+                      className="h-6 text-[10px]"
+                      onClick={() => updateReveal({ strokeEnabled: !rev.strokeEnabled })}
+                    >
+                      {rev.strokeEnabled ? "On" : "Off"}
+                    </Button>
+                  </div>
+                  {rev.strokeEnabled && (
+                    <>
+                      <Field label="Stroke Color">
+                        <input
+                          type="color"
+                          value={rev.strokeColor}
+                          onChange={(e) => updateReveal({ strokeColor: e.target.value })}
+                          className="h-7 w-full cursor-pointer rounded border border-input bg-transparent"
+                        />
+                      </Field>
+                      <Field label={`Stroke Large: ${rev.strokeWidthLarge}`}>
+                        <Slider value={[rev.strokeWidthLarge]} onValueChange={([v]) => updateReveal({ strokeWidthLarge: v })} min={0} max={1} step={0.05} />
+                      </Field>
+                      <Field label={`Stroke Small: ${rev.strokeWidthSmall}`}>
+                        <Slider value={[rev.strokeWidthSmall]} onValueChange={([v]) => updateReveal({ strokeWidthSmall: v })} min={0} max={1} step={0.05} />
+                      </Field>
+                    </>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Border</Label>
+                    <Button
+                      variant={rev.borderEnabled ? "secondary" : "outline"}
+                      size="sm"
+                      className="h-6 text-[10px]"
+                      onClick={() => updateReveal({ borderEnabled: !rev.borderEnabled })}
+                    >
+                      {rev.borderEnabled ? "On" : "Off"}
+                    </Button>
+                  </div>
+                  {rev.borderEnabled && (
+                    <Field label={`Inset: ${rev.borderInset}px`}>
+                      <Slider value={[rev.borderInset]} onValueChange={([v]) => updateReveal({ borderInset: v })} min={0.5} max={8} step={0.5} />
+                    </Field>
+                  )}
+                  <Field label={`Noise Seed: ${rev.noiseSeed}`}>
+                    <Slider value={[rev.noiseSeed]} onValueChange={([v]) => updateReveal({ noiseSeed: v })} min={0} max={999} step={1} />
+                  </Field>
+                  <Field label={`BG Cutoff: ${rev.bgCutoff}`}>
+                    <Slider value={[rev.bgCutoff]} onValueChange={([v]) => updateReveal({ bgCutoff: v })} min={0} max={80} step={1} />
+                  </Field>
+                </div>
+              );
+            })()}
           </div>
         ))}
       </div>

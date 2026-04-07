@@ -201,10 +201,10 @@ export const DragOverlay: React.FC<DragOverlayProps> = ({
               width: isEditing ? Math.max(hitWidth, 120) : hitWidth,
               minHeight: hitHeight,
               transform: tb.justification === "left"
-                ? "translateY(-100%)"
+                ? "translateY(-50%)"
                 : tb.justification === "right"
-                  ? "translate(-100%, -100%)"
-                  : "translate(-50%, -100%)",
+                  ? "translate(-100%, -50%)"
+                  : "translate(-50%, -50%)",
               cursor: isEditing ? "text" : dragId === tb.id ? "grabbing" : "grab",
               border: isSelected
                 ? "1px solid rgba(59, 130, 246, 0.7)"

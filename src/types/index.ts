@@ -12,12 +12,70 @@ export interface TextBox {
   letterSpacing: number;
 }
 
+export type RevealDirection = "in" | "out";
+export type RevealWipeMode = "linear" | "random";
+
+export interface ImageRevealConfig {
+  enabled: boolean;
+  direction: RevealDirection;
+  wipeMode: RevealWipeMode;
+  minBlockSize: number;
+  maxBlockSize: number;
+  sensitivityMin: number;
+  sensitivityMax: number;
+  bgCutoff: number;
+  strokeEnabled: boolean;
+  strokeColor: string;
+  strokeWidthLarge: number;
+  strokeWidthSmall: number;
+  borderEnabled: boolean;
+  borderInset: number;
+  noiseScale: number;
+  noiseSpeed: number;
+  noiseStrength: number;
+  noiseSeed: number;
+  durationInFrames: number;
+  delayInFrames: number;
+  softZone: number;
+  waveGap: number;
+  overlapPercent: number;
+}
+
+export function createDefaultRevealConfig(): ImageRevealConfig {
+  return {
+    enabled: false,
+    direction: "in",
+    wipeMode: "linear",
+    minBlockSize: 4,
+    maxBlockSize: 96,
+    sensitivityMin: 15,
+    sensitivityMax: 60,
+    bgCutoff: 10,
+    strokeEnabled: true,
+    strokeColor: "#ffffff",
+    strokeWidthLarge: 0.3,
+    strokeWidthSmall: 0.05,
+    borderEnabled: false,
+    borderInset: 1,
+    noiseScale: 150,
+    noiseSpeed: 20,
+    noiseStrength: 100,
+    noiseSeed: 42,
+    durationInFrames: 45,
+    delayInFrames: 0,
+    softZone: 100,
+    waveGap: 120,
+    overlapPercent: 30,
+  };
+}
+
 export interface ImageElement {
   id: string;
   src: string;
   xPercent: number;
   yPercent: number;
   scalePercent: number;
+  reveal?: ImageRevealConfig;
 }
 
 export interface LottieElement {
@@ -97,8 +155,8 @@ export function createScreen(name = "New Screen", content = "Text"): Screen {
 
 export const DEFAULT_SCREENS: Screen[] = [
   { id: "1", name: "Intro", textBoxes: [], images: [], lotties: [{ id: "1l", src: "/lottie/test-v2.json", xPercent: 50, yPercent: 50, scalePercent: 40, loop: false }], durationInFrames: 75 },
-  { id: "2", name: "Tagline", textBoxes: [{ id: "2a", content: "SHIP WHAT\u2019S NEXT\nLEARN TO BUILD, DEPLOY,\nAND SCALE YOUR AGENTS.\nVERCEL.COM/SHIP", xPercent: 8.3, yPercent: 79.9, justification: "left", fontSize: 36, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.01 }, { id: "2b", content: "[OK] 17.26\n[OK] OUTERNET\n[OK] LDN\n[OK] W1 3DJ", xPercent: 67.2, yPercent: 79.9, justification: "left", fontSize: 36, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.01 }], images: [], lotties: [], durationInFrames: 75 },
-  { id: "3", name: "Speaker", textBoxes: [{ id: "3a", content: "GUILLERMO RAUCH\nFOUNDER, VERCEL", xPercent: 8.3, yPercent: 82, justification: "left", fontSize: 36, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.01 }], images: [{ id: "3img", src: "/img/guillermo-rauch.png", xPercent: 50, yPercent: 45, scalePercent: 78 }], lotties: [], durationInFrames: 75 },
+  { id: "2", name: "Tagline", textBoxes: [{ id: "2a", content: "SHIP WHAT\u2019S NEXT\nLEARN TO BUILD, DEPLOY,\nAND SCALE YOUR AGENTS.\nVERCEL.COM/SHIP", xPercent: 8.3, yPercent: 72.6, justification: "left", fontSize: 36, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.01 }, { id: "2b", content: "[OK] 17.26\n[OK] OUTERNET\n[OK] LDN\n[OK] W1 3DJ", xPercent: 67.2, yPercent: 72.6, justification: "left", fontSize: 36, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.01 }], images: [], lotties: [], durationInFrames: 75 },
+  { id: "3", name: "Speaker", textBoxes: [{ id: "3a", content: "GUILLERMO RAUCH\nFOUNDER, VERCEL", xPercent: 8.3, yPercent: 78.3, justification: "left", fontSize: 36, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.01 }], images: [{ id: "3img", src: "/img/guillermo-rauch.png", xPercent: 50, yPercent: 45, scalePercent: 78 }], lotties: [], durationInFrames: 75 },
   { id: "4", name: "URL", textBoxes: [{ id: "4a", content: "vercel.com/ship", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], images: [], lotties: [], durationInFrames: 75 },
   { id: "5", name: "Outro", textBoxes: [{ id: "5a", content: "Ship 26", xPercent: 50, yPercent: 50, justification: "center", fontSize: 88, fontWeight: 400, fontFamily: "Geist Mono", letterSpacing: -0.02 }], images: [], lotties: [], durationInFrames: 75 },
 ];

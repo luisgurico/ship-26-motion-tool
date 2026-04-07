@@ -3,6 +3,7 @@ import { AbsoluteFill, Sequence, useVideoConfig, Img, staticFile } from "remotio
 import type { SocialPromoProps } from "./schemas";
 import type { TextBox, ImageElement, LottieElement as LottieElementType } from "@/types";
 import { AnimatedText } from "../elements/AnimatedText";
+import { ImageReveal } from "../elements/ImageReveal";
 import { LottieElement } from "../elements/LottieElement";
 import { loadProjectFonts } from "@/lib/fonts";
 
@@ -18,9 +19,9 @@ function getTransformOrigin(justification: string): string {
 
 function getTranslate(justification: string): string {
   switch (justification) {
-    case "left": return "translateY(-100%)";
-    case "right": return "translate(-100%, -100%)";
-    default: return "translate(-50%, -100%)";
+    case "left": return "translateY(-50%)";
+    case "right": return "translate(-100%, -50%)";
+    default: return "translate(-50%, -50%)";
   }
 }
 
@@ -59,7 +60,11 @@ const TitleCard: React.FC<{
               transform: "translate(-50%, -50%)",
             }}
           >
-            <Img src={src} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            {img.reveal?.enabled ? (
+              <ImageReveal src={img.src} width={w} height={h} reveal={img.reveal} />
+            ) : (
+              <Img src={src} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            )}
           </div>
         );
       })}
